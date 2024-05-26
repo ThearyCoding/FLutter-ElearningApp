@@ -9,10 +9,8 @@ import 'package:e_leaningapp/widgets/custom_listTile_widget.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:iconly/iconly.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shimmer/shimmer.dart';
@@ -30,29 +28,14 @@ class _ProfileInformationState extends State<ProfileInformation> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<UserModel?> _getUser() async {
-    final User? currentUser = _auth.currentUser;
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-    if (currentUser != null) {
-      String uid = currentUser.uid;
-      try {
-        DocumentSnapshot userDoc =
-            await _firestore.collection('users').doc(uid).get();
-        if (userDoc.exists) {
-          return UserModel.fromMap(userDoc.data() as Map<String, dynamic>);
-        } else {
-          return null; // Return null if user document does not exist
-        }
-      } catch (e) {
-        print('Error fetching user from Firestore: $e');
-        return null; // Return null in case of error
-      }
-    } else {
-      print('No user is currently signed in');
-      return null;
-    }
-  }
+  User? user = FirebaseAuth.instance.currentUser;
 
+  String photoURL = '';
+
+  XFile? _imageFile;
+  final ThemeController themeController = Get.find<ThemeController>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,46 +55,6 @@ class _ProfileInformationState extends State<ProfileInformation> {
     );
   }
 
-  Future<void> _uploadImageAndSaveUrl(File imageFile) async {
-    EasyLoading.show(status: 'Uploading...');
-    String? downloadURL = await FirebaseService()
-        .uploadImageToStorage(_imageFile!, 'user_images');
-    if (downloadURL != null) {
-      _saveImageUrlToFirestore(downloadURL);
-    }
-  }
-
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
-  User? user = FirebaseAuth.instance.currentUser;
-  String photoURL = '';
-  Future<void> _saveImageUrlToFirestore(String imageUrl) async {
-    try {
-      await firestore.collection('users').doc(user!.uid).update({
-        'photoURL': imageUrl,
-      });
-      setState(() {
-        photoURL = imageUrl;
-      });
-    } catch (e) {
-      print('Error saving image URL to Firestore: $e');
-    } finally {
-      EasyLoading.dismiss();
-    }
-  }
-
-  XFile? _imageFile;
-  Future<void> _pickImage() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom, allowedExtensions: ['png', 'jpg', 'jpeg']);
-    if (result != null) {
-      setState(() {
-        _imageFile = XFile(result.files.single.path!);
-        _uploadImageAndSaveUrl(File(result.files.single.path!));
-      });
-    }
-  }
-
-  final ThemeController themeController = Get.find<ThemeController>();
   Widget _build(UserModel? user) {
     return Column(
       children: [
@@ -137,7 +80,7 @@ class _ProfileInformationState extends State<ProfileInformation> {
                 color: Colors.black.withOpacity(0.5),
                 spreadRadius: 5,
                 blurRadius: 10,
-                offset: Offset(0, 3), // changes position of shadow
+                offset: const Offset(0, 3), // changes position of shadow
               ),
             ],
           ),
@@ -251,25 +194,25 @@ class _ProfileInformationState extends State<ProfileInformation> {
                 },
               ),
               const SizedBox(height: 10),
-               CustomListTile(
-          leadingIcon: Obx(
-            () => Icon(
-              themeController.currentTheme.value == ThemeMode.dark
-                  ? Icons.nightlight_outlined
-                  : Icons.wb_sunny_outlined,
-              size: 18,
-            ),
-          ),
-          title: 'Change Theme',
-          showSwitch: true,
-          currentTheme: themeController.currentTheme,
-          onSwitchChanged: (value) {
-            themeController.switchTheme();
-          },
-          onTap: () {
-            themeController.switchTheme();
-          },
-        ),
+              CustomListTile(
+                leadingIcon: Obx(
+                  () => Icon(
+                    themeController.currentTheme.value == ThemeMode.dark
+                        ? Icons.nightlight_outlined
+                        : Icons.wb_sunny_outlined,
+                    size: 18,
+                  ),
+                ),
+                title: 'Change Theme',
+                showSwitch: true,
+                currentTheme: themeController.currentTheme,
+                onSwitchChanged: (value) {
+                  themeController.switchTheme();
+                },
+                onTap: () {
+                  themeController.switchTheme();
+                },
+              ),
             ],
           ),
         ),
@@ -348,7 +291,7 @@ class _ProfileInformationState extends State<ProfileInformation> {
                           height: 20,
                           color: Colors.white,
                         ),
-                        SizedBox(height: 5),
+                        const SizedBox(height: 5),
                         Container(
                           width: 100,
                           height: 16,
@@ -361,7 +304,7 @@ class _ProfileInformationState extends State<ProfileInformation> {
               ],
             ),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Column(
@@ -372,25 +315,25 @@ class _ProfileInformationState extends State<ProfileInformation> {
                   height: 16,
                   color: Colors.white,
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Container(
                   width: MediaQuery.of(context).size.width * 0.9,
                   height: 50,
                   color: Colors.white,
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Container(
                   width: 120,
                   height: 16,
                   color: Colors.white,
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Container(
                   width: MediaQuery.of(context).size.width * 0.9,
                   height: 50,
                   color: Colors.white,
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Container(
                   width: MediaQuery.of(context).size.width * 0.9,
                   height: 50,
@@ -399,7 +342,7 @@ class _ProfileInformationState extends State<ProfileInformation> {
               ],
             ),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           ElevatedButton(
             onPressed: () {},
             child: SizedBox(
@@ -410,5 +353,63 @@ class _ProfileInformationState extends State<ProfileInformation> {
         ],
       ),
     );
+  }
+
+  Future<UserModel?> _getUser() async {
+    final User? currentUser = _auth.currentUser;
+
+    if (currentUser != null) {
+      String uid = currentUser.uid;
+      try {
+        DocumentSnapshot userDoc =
+            await _firestore.collection('users').doc(uid).get();
+        if (userDoc.exists) {
+          return UserModel.fromMap(userDoc.data() as Map<String, dynamic>);
+        } else {
+          return null; // Return null if user document does not exist
+        }
+      } catch (e) {
+        print('Error fetching user from Firestore: $e');
+        return null; // Return null in case of error
+      }
+    } else {
+      print('No user is currently signed in');
+      return null;
+    }
+  }
+
+  Future<void> _pickImage() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom, allowedExtensions: ['png', 'jpg', 'jpeg']);
+    if (result != null) {
+      setState(() {
+        _imageFile = XFile(result.files.single.path!);
+        _uploadImageAndSaveUrl(File(result.files.single.path!));
+      });
+    }
+  }
+
+  Future<void> _saveImageUrlToFirestore(String imageUrl) async {
+    try {
+      await firestore.collection('users').doc(user!.uid).update({
+        'photoURL': imageUrl,
+      });
+      setState(() {
+        photoURL = imageUrl;
+      });
+    } catch (e) {
+      print('Error saving image URL to Firestore: $e');
+    } finally {
+      EasyLoading.dismiss();
+    }
+  }
+
+  Future<void> _uploadImageAndSaveUrl(File imageFile) async {
+    EasyLoading.show(status: 'Uploading...');
+    String? downloadURL = await FirebaseService()
+        .uploadImageToStorage(_imageFile!, 'user_images');
+    if (downloadURL != null) {
+      _saveImageUrlToFirestore(downloadURL);
+    }
   }
 }
