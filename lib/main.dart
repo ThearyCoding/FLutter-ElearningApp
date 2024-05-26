@@ -21,7 +21,7 @@ void main() async {
     await GetStorage.init();
     Get.put(ThemeController());
   Get.put(
-      LocalStorageSharedPreferences());
+      LocalStorageSharedPreferences()); // Register LocalStorageSharedPreferences as a controller
   runApp(const MyApp());
 }
 
@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
       themeMode: Get.find<ThemeController>().getThemeModeFromStorage(),
       initialRoute: '/',
       getPages: [
-        GetPage(name: '/', page: () => LoginPage()),
+        GetPage(name: '/', page: () => LoginPage()), // LoginPage route
         GetPage(
             name: '/complete-info',
             page: () =>
