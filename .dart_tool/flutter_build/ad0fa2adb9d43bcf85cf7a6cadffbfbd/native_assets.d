@@ -1,0 +1,1 @@
+ C:\\Users\\MSI\\Desktop\\firebasestore\\e_leaningapp\\.dart_tool\\flutter_build\\ad0fa2adb9d43bcf85cf7a6cadffbfbd\\native_assets.yaml: 

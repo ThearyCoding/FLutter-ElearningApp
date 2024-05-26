@@ -1,0 +1,340 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:e_leaningapp/FirebaseService/Firebase_Service.dart';
+import 'package:e_leaningapp/Model/Courses_Model.dart';
+import 'package:e_leaningapp/Model/category_Model.dart';
+import 'package:flutter/material.dart';
+
+class AddQuizScreen extends StatefulWidget {
+  const AddQuizScreen({Key? key}) : super(key: key);
+
+  @override
+  State<AddQuizScreen> createState() => _AddQuizScreenState();
+}
+
+class _AddQuizScreenState extends State<AddQuizScreen> {
+  final TextEditingController questionController = TextEditingController();
+  final List<TextEditingController> optionControllers = List.generate(
+    4,
+    (index) => TextEditingController(),
+  );
+  final TextEditingController answerController = TextEditingController();
+  String selectedCategory = 'General';
+  CategoryModel? selectedCategoryModel;
+  String? selectedCourse;
+  List<String> courses = [];
+  List<CategoryModel> fetchedCategories = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchCategories();
+    fetchAllCourses();
+  }
+
+  Future<void> fetchCategories() async {
+    List<CategoryModel> fetchedCategories =
+        await FirebaseService().getCategories();
+    setState(() {
+      this.fetchedCategories = fetchedCategories;
+      selectedCategoryModel =
+          fetchedCategories.isNotEmpty ? fetchedCategories[0] : null;
+      fetchCourses(selectedCategoryModel?.title ?? '');
+    });
+  }
+
+  void updateTextFields(CategoryModel? selectedCategory) {
+    if (selectedCategory != null) {
+      categoryTitleController.text = selectedCategory.title;
+    } else {
+      categoryTitleController.clear();
+    }
+  }
+   CourseModel? selectedCourseModel;
+  List<CourseModel> allCourses = [];
+ Future<void> fetchAllCourses() async {
+    List<CourseModel> courses = await FirebaseService().getAllCourses();
+    setState(() {
+      allCourses = courses;
+    });
+  }
+  Future<void> fetchCourses(String categoryTitle) async {
+    List<String> courses = [];
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('categories')
+          .doc(categoryTitle)
+          .collection('courses')
+          .get();
+
+      querySnapshot.docs.forEach((doc) {
+        courses.add(doc['title']);
+      });
+    } catch (error) {
+      print("Error fetching courses: $error");
+    }
+
+    setState(() {
+      this.courses = courses;
+      selectedCourse = courses.isNotEmpty ? courses[0] : null;
+    });
+  }
+
+  Future<void> _addQuizQuestion() async {
+  showDialog(
+    barrierDismissible: false,
+    context: context,
+    builder: (context) {
+      return Center(
+        child: CircularProgressIndicator(),
+      );
+    },
+  );
+
+  final String categoryTitle = selectedCategoryModel?.title ?? '';
+  final String courseTitle = selectedCourse ?? '';
+  final String question = questionController.text.trim();
+  final List<String> options = optionControllers.map((controller) => controller.text.trim()).toList();
+  final String answer = answerController.text.trim();
+
+  try {
+    if (categoryTitle.isNotEmpty && courseTitle.isNotEmpty && question.isNotEmpty && options.isNotEmpty && answer.isNotEmpty) {
+
+      // Add the quiz question to Firestore
+    await FirebaseFirestore.instance
+    .collection('quizzes') // Change to 'quizzes' collection
+    .doc(categoryTitle)// Use the category title as document ID
+    .collection('courses')
+    .doc(courseTitle)
+    .collection('questions')
+    .add({
+  'question': question,
+  'options': options,
+  'answer': answer,
+  'timestamp': FieldValue.serverTimestamp(),
+});
+
+      // Clear text fields after adding data
+      questionController.clear();
+      for (var controller in optionControllers) {
+        controller.clear();
+      }
+      answerController.clear();
+
+      Navigator.pop(context); // Close the loading dialog
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Quiz question added successfully.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Category, course, question, options, and answer cannot be empty.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  } catch (error) {
+    print("Error adding quiz question: $error");
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('An error occurred while adding the quiz question.'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+    Navigator.pop(context); 
+  }
+}
+
+
+  final TextEditingController categoryTitleController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Add Question'),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(20.0),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 20.0),
+                width: MediaQuery.of(context).size.width,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.5),
+                      spreadRadius: 1,
+                      blurRadius: 3,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8.0),
+                      child: Text(
+                        "Question",
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    TextField(
+                      controller: questionController,
+                      maxLines: null,
+                      decoration: InputDecoration(
+                        hintText: "Enter your question here",
+                        hintStyle: TextStyle(
+                          color: Colors.grey,
+                          fontStyle: FontStyle.italic,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey.shade100,
+                        contentPadding: EdgeInsets.all(12),
+                      ),
+                    ),
+                    SizedBox(height: 20,)
+                  ],
+                ),
+              ),
+              SizedBox(height: 20),
+              const Text(
+                'Options:',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              SizedBox(height: 10),
+              for (int i = 0; i < 4; i++)
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                  child: TextField(
+                    controller: optionControllers[i],
+                    decoration: InputDecoration(
+                      labelText: 'Option ${i + 1}',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              SizedBox(height: 10),
+              TextField(
+                controller: answerController,
+                decoration: InputDecoration(
+                  labelText: 'Answer',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              SizedBox(height: 20),
+              DropdownButtonFormField<CategoryModel>(
+                value: selectedCategoryModel,
+                onChanged: (value) {
+                  setState(() {
+                    selectedCategoryModel = value;
+                    updateTextFields(selectedCategoryModel);
+                    fetchCourses(selectedCategoryModel?.title ?? '');
+                  });
+                },
+                decoration: InputDecoration(
+                  labelText: 'Category',
+                  border: OutlineInputBorder(),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+                  prefixIcon: Icon(Icons.category),
+                ),
+                style: TextStyle(color: Colors.black, fontSize: 16.0),
+                items: fetchedCategories.map((category) {
+                  return DropdownMenuItem<CategoryModel>(
+                    value: category,
+                    child: Text(category.title),
+                  );
+                }).toList(),
+                icon: Icon(Icons.arrow_drop_down),
+                iconSize: 36.0,
+                iconEnabledColor: Colors.blue,
+                elevation: 8,
+                dropdownColor: Colors.white,
+              ),
+              SizedBox(height: 20),
+              DropdownButtonFormField<String>(
+                value: selectedCourse,
+                onChanged: (value) {
+                  setState(() {
+                    selectedCourse = value;
+                  });
+                },
+                decoration: InputDecoration(
+                  labelText: 'Course',
+                  border: OutlineInputBorder(),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+                  prefixIcon: Icon(Icons.library_books),
+                ),
+                style: TextStyle(color: Colors.black, fontSize: 16.0),
+                items: ['Select Course', ...courses].map((course) {
+                  return DropdownMenuItem<String>(
+                    value: course,
+                    child: Text(course),
+                  );
+                }).toList(),
+                icon: Icon(Icons.arrow_drop_down),
+                iconSize: 36.0,
+                iconEnabledColor: Colors.blue,
+                elevation: 8,
+                dropdownColor: Colors.white,
+              ),
+              SizedBox(height: 20),
+              DropdownButtonFormField<CourseModel>(
+  value: selectedCourseModel,
+  onChanged: (value) {
+    setState(() {
+      selectedCourseModel = value!; // Update selectedCourseModel directly
+    });
+  },
+  decoration: InputDecoration(
+    labelText: 'Course',
+    border: OutlineInputBorder(),
+    contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+    prefixIcon: Icon(Icons.library_books),
+  ),
+  style: TextStyle(color: Colors.black, fontSize: 16.0),
+  items: allCourses.map((course) {
+    return DropdownMenuItem<CourseModel>(
+      value: course,
+      child: Text(course.title),
+    );
+  }).toList(),
+  icon: Icon(Icons.arrow_drop_down),
+  iconSize: 36.0,
+  iconEnabledColor: Colors.blue,
+  elevation: 8,
+  dropdownColor: Colors.white,
+),
+              ElevatedButton(
+                onPressed: _addQuizQuestion,
+                child: Text('Add Question'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
