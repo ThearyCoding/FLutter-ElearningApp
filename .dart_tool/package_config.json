@@ -236,24 +236,6 @@
       "languageVersion": "3.2"
     },
     {
-      "name": "firebase_ui_firestore",
-      "rootUri": "file:///C:/Users/MSI/AppData/Local/Pub/Cache/hosted/pub.dev/firebase_ui_firestore-1.6.3",
-      "packageUri": "lib/",
-      "languageVersion": "2.18"
-    },
-    {
-      "name": "firebase_ui_localizations",
-      "rootUri": "file:///C:/Users/MSI/AppData/Local/Pub/Cache/hosted/pub.dev/firebase_ui_localizations-1.11.0",
-      "packageUri": "lib/",
-      "languageVersion": "2.18"
-    },
-    {
-      "name": "firebase_ui_shared",
-      "rootUri": "file:///C:/Users/MSI/AppData/Local/Pub/Cache/hosted/pub.dev/firebase_ui_shared-1.4.1",
-      "packageUri": "lib/",
-      "languageVersion": "2.18"
-    },
-    {
       "name": "flick_video_player",
       "rootUri": "file:///C:/Users/MSI/AppData/Local/Pub/Cache/hosted/pub.dev/flick_video_player-0.7.0",
       "packageUri": "lib/",
@@ -306,12 +288,6 @@
       "rootUri": "file:///C:/Users/MSI/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_lints-2.0.3",
       "packageUri": "lib/",
       "languageVersion": "2.19"
-    },
-    {
-      "name": "flutter_localizations",
-      "rootUri": "file:///C:/src/flutter/packages/flutter_localizations",
-      "packageUri": "lib/",
-      "languageVersion": "3.2"
     },
     {
       "name": "flutter_plugin_android_lifecycle",
@@ -836,7 +812,7 @@
       "languageVersion": "3.2"
     }
   ],
-  "generated": "2024-05-26T04:29:00.661130Z",
+  "generated": "2024-05-26T11:34:12.849284Z",
   "generator": "pub",
   "generatorVersion": "3.4.0",
   "flutterRoot": "file:///C:/src/flutter",

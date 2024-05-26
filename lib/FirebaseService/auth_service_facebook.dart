@@ -1,10 +1,7 @@
-import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 class AuthServiceFacebook {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -52,6 +49,7 @@ class AuthServiceFacebook {
     print("Error during Facebook login: $error");
     return null;
   }
+  return null;
 }
 
 // Inside your login screen or wherever you handle the authentication flow
