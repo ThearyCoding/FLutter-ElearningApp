@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
       themeMode: Get.find<ThemeController>().getThemeModeFromStorage(),
       initialRoute: '/',
       getPages: [
-        GetPage(name: '/', page: () => LoginPage()), // LoginPage route
+        GetPage(name: '/', page: () => LoginPage()),
         GetPage(
             name: '/complete-info',
             page: () =>
