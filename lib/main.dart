@@ -21,7 +21,7 @@ void main() async {
     await GetStorage.init();
     Get.put(ThemeController());
   Get.put(
-      LocalStorageSharedPreferences()); // Register LocalStorageSharedPreferences as a controller
+      LocalStorageSharedPreferences());
   runApp(const MyApp());
 }
 
