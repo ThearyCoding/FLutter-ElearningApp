@@ -6,9 +6,6 @@ class CourseModel {
   final String imageUrl;
   final String categoryId;
   final String adminId;
-  final int pdfCount;
-  final int quizCount;
-  final int videoCount;
   final double originalPrice;
   final double discountedPrice;
   final DateTime timestamp;
@@ -19,9 +16,6 @@ class CourseModel {
     required this.imageUrl,
     required this.categoryId,
     required this.adminId,
-    required this.pdfCount,
-    required this.quizCount,
-    required this.videoCount,
     required this.originalPrice,
     required this.discountedPrice,
     required this.timestamp
@@ -44,9 +38,6 @@ factory CourseModel.fromJson(Map<String, dynamic> json) {
     imageUrl: json['imageUrl'] ?? "",
     categoryId: json['categoryId'] ?? "",
     adminId: json['adminId'] ?? "",
-    pdfCount: int.tryParse(json['pdfCount'] ?? "") ?? 0,
-    quizCount: int.tryParse(json['quizCount'] ?? "") ?? 0,
-    videoCount: int.tryParse(json['videoCount'] ?? "") ?? 0,
     originalPrice: double.tryParse(json['originalPrice'] ?? "") ?? 0.0,
     discountedPrice: double.tryParse(json['discountedPrice'] ?? "") ?? 0.0,
     timestamp: (json['timestamp'] as Timestamp).toDate(),
@@ -62,9 +53,6 @@ factory CourseModel.fromJson(Map<String, dynamic> json) {
       'imageUrl': imageUrl,
       'categoryId': categoryId,
       'adminId': adminId,
-      'pdfCount': pdfCount,
-      'quizCount': quizCount,
-      'videoCount': videoCount,
       'timestamp': timestamp
     };
   }

@@ -1,14 +1,15 @@
-import 'package:e_leaningapp/FirebaseService/Firebase_Service.dart';
-import 'package:e_leaningapp/GetxController/course_registration_controller.dart';
+import 'package:e_leaningapp/export/export.dart';
+import 'package:e_leaningapp/service/firebase/firebase_service.dart';
+import 'package:e_leaningapp/controller/course_registration_controller.dart';
 import 'package:e_leaningapp/Model/Courses_Model.dart';
 import 'package:e_leaningapp/Model/Topic_Model.dart';
 import 'package:e_leaningapp/Model/admin_model.dart';
-import 'package:e_leaningapp/Screen/Topic_Screen.dart';
+import 'package:e_leaningapp/Screen/topic_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
+import 'package:palette_generator/palette_generator.dart';
 
 class DetailCourseScreen extends StatefulWidget {
   final String categoryId;
@@ -46,69 +47,96 @@ class _DetailCourseScreenState extends State<DetailCourseScreen> {
     });
   }
 
+  bool isConnectedToInternet = true;
+  bool wasConnectedToInternet = true;
   void fetchQuestionsQuiz() async {
     totalQuestionQuiz =
         await FirebaseService().fetchTotalQuestions(widget.course.id);
   }
 
-  // Method to fetch user's progress and update watchedTotal
-  void fetchUserProgressAndUpdateWatchedTotal() async {
-    Map<String, dynamic>? userProgress =
-        await FirebaseService().getUserProgress(user!.uid, widget.course.id);
-    if (userProgress != null && userProgress['topics'] != null) {
-      setState(() {
-        watchedtotal = userProgress['topics'].length;
-      });
+  Color dominantColor = Colors.grey; // Default color
+// Method to get dominant color from image
+  Future<void> getDominantColor() async {
+    final PaletteGenerator paletteGenerator =
+        await PaletteGenerator.fromImageProvider(
+      NetworkImage(widget.course.imageUrl),
+    );
+    setState(() {
+      dominantColor = paletteGenerator.dominantColor?.color ?? Colors.grey;
+    });
+  }
+
+  @override
+  void setState(VoidCallback fn) {
+    if (mounted) {
+      super.setState(fn);
     }
   }
 
   @override
   void initState() {
     super.initState();
-    fetchQuestionsQuiz();
-    fetchTopicsAndUpdateTotalVideos();
-    fetchUserProgressAndUpdateWatchedTotal();
-    _controller.checkRegistration(user!.uid, widget.course.id);
+    if (!mounted) return;
+    if (mounted) {
+      fetchQuestionsQuiz();
+      fetchTopicsAndUpdateTotalVideos();
+      _controller.checkRegistration(user!.uid, widget.course.id);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.course.title),
-      ),
-      body: Column(
-        children: [
-          // Image
-          Stack(
-            alignment: Alignment.center,
-            clipBehavior: Clip.none,
-            children: [
-              // Image
-              SizedBox(
-                height: converheight,
-                child: Image.network(
-                  widget.course.imageUrl,
-                  fit: BoxFit.cover,
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            leading: InkWell(
+              borderRadius: BorderRadius.circular(50),
+              onTap: () => Navigator.of(context).pop(),
+              child: Container(
+                margin: const EdgeInsets.all(10),
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: dominantColor.withOpacity(0.2),
+                  shape: BoxShape.circle,
                 ),
+                child: const Icon(Icons.arrow_back_ios, size: 16),
               ),
-              // Positioned for Watch Video Button
-              Positioned(
-                top: converheight - profileheight / 2,
-                left: 0,
-                right: 0,
-                child: SizedBox(
+            ),
+            expandedHeight: 220.0,
+            pinned: true,
+            flexibleSpace: FlexibleSpaceBar(
+              background: CachedNetworkImage(
+                imageUrl: widget.course.imageUrl,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Shimmer.fromColors(
+                  baseColor: Colors.grey[300]!,
+                  highlightColor: Colors.grey[100]!,
+                  child: Container(
+                    color: Colors.white,
+                  ),
+                ),
+                errorWidget: (context, url, error) => const Icon(Icons.error),
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Column(
+              children: [
+                SizedBox(
                   width: MediaQuery.of(context).size.width,
                   child: GestureDetector(
                     onTap: () async {
-                  
                       if (!_controller.isRegistered.value) {
-                        EasyLoading.show(status: 'Please wait');
+                        EasyLoading.show(
+                            status: 'Please wait',
+                            maskType: EasyLoadingMaskType.clear);
                         await _controller.registerUser(
                             user!.uid, widget.course.id);
-                            EasyLoading.dismiss();
+                        EasyLoading.dismiss();
                         if (!_controller.hasShownDialog.value) {
-                          bool isWatch = await _showCustomDialog(context);
+                          bool isWatch = await _showCustomDialog();
                           _controller.hasShownDialog.value =
                               true; // Mark the dialog as shown
 
@@ -152,8 +180,8 @@ class _DetailCourseScreenState extends State<DetailCourseScreen> {
                                 Text(
                                   _controller.isRegistered.value
                                       ? 'Continue Watching'
-                                      : 'Start Watch Video',
-                                  style: TextStyle(color: Colors.white),
+                                      : 'Register Now',
+                                  style: const TextStyle(color: Colors.white),
                                 ),
                               ],
                             ),
@@ -161,142 +189,143 @@ class _DetailCourseScreenState extends State<DetailCourseScreen> {
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
+                const SizedBox(height: 30), // Spacer
+                Padding(
+                  padding: const EdgeInsets.only(left: 10, right: 10),
+                  child: Row(
+                    children: [
+                      // Title
+                      Flexible(
+                        child: Text(
+                          widget.course.title,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                          softWrap: true,
+                          overflow: TextOverflow.visible,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.only(left: 10, right: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Lecture by ${widget.admin.name}',
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
 
-          const SizedBox(height: 30), // Spacer
-          Padding(
-            padding: const EdgeInsets.only(left: 10, right: 10),
-            child: Row(
-              children: [
-                // Title
-                Text(
-                  widget.course.title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
+                // Row for price and favorite
+                Padding(
+                  padding: const EdgeInsets.only(left: 10, right: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                          child: RichText(
+                              text: const TextSpan(
+                                  text: 'Price  ',
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
+                                  children: <TextSpan>[
+                            TextSpan(
+                                text: 'Free',
+                                style: TextStyle(
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.w500))
+                          ]))),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.favorite,
+                          color: Colors
+                              .red, // Assuming it's filled if it's a favorite
+                        ),
+                        onPressed: () {
+                          // Toggle favorite status
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 5), // Spacer
+
+                // Divider
+                const Divider(
+                  color: Colors.grey,
+                ),
+                const SizedBox(height: 8), // Spacer
+
+                // Row for icons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Column(
+                      children: [
+                        const Icon(
+                          Icons.video_library, // Video Icon
+                          size: 30,
+                        ),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        Text('$totalVideos')
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        const Icon(
+                          Icons.quiz, // Quiz Icon
+                          size: 30,
+                        ),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        Text('$totalQuestionQuiz')
+                      ],
+                    ),
+                    const Column(
+                      children: [
+                        Icon(
+                          Icons.picture_as_pdf, // PDF Icon
+                          size: 30,
+                        ),
+                        SizedBox(
+                          height: 5,
+                        ),
+                        Text('0')
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 5), // Spacer
+                const Divider(
+                  color: Colors.grey,
+                ),
+
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 20),
+                      Text(
+                        'Watched $totalVideos/$watchedtotal',
+                        style: const TextStyle(fontSize: 25),
+                      ),
+                    ],
                   ),
                 ),
               ],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.only(left: 10, right: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Text(
-                  'Lecture by ${widget.admin.name}',
-                  style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-
-          // Row for price and favorite
-          Padding(
-            padding: const EdgeInsets.only(left: 10, right: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Flexible(
-                    child: RichText(
-                        text: const TextSpan(
-                            text: 'Price  ',
-                            style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold),
-                            children: <TextSpan>[
-                      TextSpan(
-                          text: 'Free',
-                          style: TextStyle(
-                              color: Colors.red, fontWeight: FontWeight.w500))
-                    ]))),
-                IconButton(
-                  icon: const Icon(
-                    Icons.favorite,
-                    color:
-                        Colors.red, // Assuming it's filled if it's a favorite
-                  ),
-                  onPressed: () {
-                    // Toggle favorite status
-                  },
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 5), // Spacer
-
-          // Divider
-          const Divider(
-            color: Colors.grey,
-          ),
-          const SizedBox(height: 8), // Spacer
-
-          // Row for icons
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Column(
-                children: [
-                  const Icon(
-                    Icons.video_library, // Video Icon
-                    size: 30,
-                  ),
-                  const SizedBox(
-                    height: 5,
-                  ),
-                  Text('$totalVideos')
-                ],
-              ),
-              Column(
-                children: [
-                  const Icon(
-                    Icons.quiz, // Quiz Icon
-                    size: 30,
-                  ),
-                  const SizedBox(
-                    height: 5,
-                  ),
-                  Text('$totalQuestionQuiz')
-                ],
-              ),
-              const Column(
-                children: [
-                  Icon(
-                    Icons.picture_as_pdf, // PDF Icon
-                    size: 30,
-                  ),
-                  SizedBox(
-                    height: 5,
-                  ),
-                  Text('0')
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 5), // Spacer
-          const Divider(
-            color: Colors.grey,
-          ),
-
-          Expanded(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 20),
-                  Text(
-                    'Watched $totalVideos/$watchedtotal',
-                    style: const TextStyle(fontSize: 25),
-                  ),
-                ],
-              ),
             ),
           ),
         ],
@@ -304,7 +333,7 @@ class _DetailCourseScreenState extends State<DetailCourseScreen> {
     );
   }
 
-  Future<bool> _showCustomDialog(BuildContext context) async {
+  Future<bool> _showCustomDialog() async {
     bool startLesson = await showDialog(
       context: context,
       barrierDismissible: false,
@@ -316,8 +345,8 @@ class _DetailCourseScreenState extends State<DetailCourseScreen> {
           insetPadding:
               const EdgeInsets.symmetric(horizontal: 20, vertical: 150),
           child: Column(
-           // mainAxisSize: MainAxisSize.min,
-           mainAxisAlignment: MainAxisAlignment.center,
+            // mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Padding(
                 padding: const EdgeInsets.all(16.0),

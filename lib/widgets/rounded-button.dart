@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'palatte.dart';
 
 class RoundedButton extends StatelessWidget {
-  const RoundedButton({
+  const RoundedButton({super.key, 
     required this.buttonText,
   });
 

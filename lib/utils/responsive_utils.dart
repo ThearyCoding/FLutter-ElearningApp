@@ -39,52 +39,56 @@ double getResponsiveHeight(BuildContext context, double baseHeight) {
   }
 }
 
-
-
 int getCrossAxisCount(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    if (screenWidth >= 1200) {
-      return 4; // Desktop
-    } else if (screenWidth >= 800) {
-      return 3; // Tablet
-    } else {
-      return 2; // Mobile
-    }
+  double screenWidth = MediaQuery.of(context).size.width;
+  if (screenWidth >= 1200) {
+    return 4; // Desktop
+  } else if (screenWidth >= 600) {
+    return 3; // Tablet
+  } else {
+    return 2; // Mobile
   }
+}
 
-  double getChildAspectRatio(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    if (screenWidth >= 1200) {
-      return 1.0; // Desktop
-    } else if (screenWidth >= 800) {
-      return 0.7; // Tablet
-    } else if (screenWidth >= 600) {
-      return 0.8; // Large Mobile
-    } else if (screenWidth >= 400) {
-      return 0.96; // Middle Mobile
+double getChildAspectRatio(BuildContext context) {
+  double screenWidth = MediaQuery.of(context).size.width;
+  if (screenWidth >= 1200) {
+    return 1.0; // Desktop
+  } else if (screenWidth >= 800) {
+    return 0.7; // Tablet
+  } else if (screenWidth >= 600) {
+    return 0.9; // Large Mobile
+  } else if (screenWidth >= 400) {
+    return 0.96; // Middle Mobile
+  } else if (screenWidth >= 300) {
+    if (screenWidth >= 380) {
+      return 0.88; // Smaller Mobile
     } else {
-      return 0.9; // Small Mobile
+      return 0.84;
     }
+  } else {
+    return 0.92; // Smallest Mobile
   }
+}
 
-  double getCrossAxisSpacing(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    if (screenWidth >= 1200) {
-      return 16.0; // Desktop
-    } else if (screenWidth >= 800) {
-      return 12.0; // Tablet
-    } else {
-      return 8.0; // Mobile
-    }
+double getCrossAxisSpacing(BuildContext context) {
+  double screenWidth = MediaQuery.of(context).size.width;
+  if (screenWidth >= 1200) {
+    return 16.0; // Desktop
+  } else if (screenWidth >= 800) {
+    return 12.0; // Tablet
+  } else {
+    return 8.0; // Mobile
   }
+}
 
-  double getMainAxisSpacing(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    if (screenWidth >= 1200) {
-      return 16.0; // Desktop
-    } else if (screenWidth >= 800) {
-      return 12.0; // Tablet
-    } else {
-      return 8.0; // Mobile
-    }
+double getMainAxisSpacing(BuildContext context) {
+  double screenWidth = MediaQuery.of(context).size.width;
+  if (screenWidth >= 1200) {
+    return 16.0; // Desktop
+  } else if (screenWidth >= 800) {
+    return 12.0; // Tablet
+  } else {
+    return 8.0; // Mobile
   }
+}

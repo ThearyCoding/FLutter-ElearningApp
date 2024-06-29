@@ -6,12 +6,18 @@ class CustomThemes {
     useMaterial3: false,
     brightness: Brightness.light,
     scaffoldBackgroundColor: Colors.white,
-    colorScheme: ColorScheme.light(background: Color(0xffECECEC),secondary: Colors.grey[300]!,),
+    colorScheme: ColorScheme.light(
+      background: Color(0xffECECEC),
+      secondary: Colors.grey[300]!,
+      primaryContainer: Colors.blueAccent,
+      onPrimary: Colors.black,
+      primary: Colors.white
+    ),
     appBarTheme: const AppBarTheme(
       backgroundColor: Colors.blue,
       iconTheme: IconThemeData(color: Colors.white), // AppBar icon color
     ),
-     textTheme: const TextTheme(
+    textTheme: const TextTheme(
       bodyLarge: TextStyle(color: Colors.black), // General text color
       bodyMedium: TextStyle(color: Colors.black87), // Secondary text color
       displayLarge: TextStyle(color: Colors.black), // Headline text color
@@ -24,19 +30,7 @@ class CustomThemes {
       // Define other text styles as needed
     ),
     iconTheme: IconThemeData(color: Colors.black), // General icon color
-    primaryIconTheme: IconThemeData(color: Colors.black), // Primary icon color
-    tabBarTheme: const TabBarTheme(
-      labelColor: Colors.blue,
-      unselectedLabelColor: Colors.grey,
-      indicator: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: Colors.blue,
-            width: 3.0,
-          ),
-        ),
-      ),
-    ),
+    primaryIconTheme: const IconThemeData(color: Colors.black), // Primary icon color
   );
 
   static final darkTheme = ThemeData(
@@ -46,14 +40,16 @@ class CustomThemes {
     scaffoldBackgroundColor: Color(0xff171717),
     colorScheme: ColorScheme.dark(
       background: Color(0xff212121),
-      secondary: Colors.grey[500]!,
-      
+      secondary: Colors.grey[800]!,
+      primaryContainer: Colors.blueAccent,
+      onPrimary: Colors.white,
+      primary: Colors.white
     ),
     appBarTheme: const AppBarTheme(
       backgroundColor: Colors.blueGrey,
       iconTheme: IconThemeData(color: Colors.white), // AppBar icon color
     ),
-     textTheme: const TextTheme(
+    textTheme: const TextTheme(
       bodyLarge: TextStyle(color: Colors.white), // General text color
       bodyMedium: TextStyle(color: Colors.white70), // Secondary text color
       displayLarge: TextStyle(color: Colors.white), // Headline text color
@@ -65,19 +61,10 @@ class CustomThemes {
       displayLarge: TextStyle(color: Colors.white), // Headline text color
       // Define other text styles as needed
     ),
-    iconTheme: IconThemeData(color: Colors.white.withOpacity(.9)), // General icon color
-    primaryIconTheme: IconThemeData(color: Colors.white.withOpacity(.9)), // Primary icon color
-    tabBarTheme: const TabBarTheme(
-      labelColor: Colors.blueGrey,
-      unselectedLabelColor: Colors.grey,
-      indicator: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: Colors.blueGrey,
-            width: 3.0,
-          ),
-        ),
-      ),
+    iconTheme: IconThemeData(
+        color: Colors.grey.shade400), // General icon color
+    primaryIconTheme: IconThemeData(
+      color: Colors.white.withOpacity(.9),
     ),
   );
 }

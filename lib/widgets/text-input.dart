@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'palatte.dart';
 
 class TextInput extends StatelessWidget {
-  const TextInput({
+  const TextInput({super.key, 
     required this.icon,
     required this.hint,
     required this.inputType,
